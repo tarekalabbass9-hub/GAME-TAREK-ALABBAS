@@ -88,6 +88,10 @@
 </div>
 
 <script>
+// --- إضافة مؤثرات صوتية تفاعلية ---
+const correctSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3'); // صوت إجابة صحيحة مشجع
+const wrongSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3');   // صوت إجابة خاطئة لطيف
+
 const questions = [
     { type: 'letter', q: 'أي من الكلمات بها حرف ألف منفصل (أ...)؟', letter: 'أ', choices: ['أرنب', 'ثعلب', 'بيت', 'ثمار'], ans: 'أرنب' },
     { type: 'word', q: 'اختر الحرف المنفصل المناسب للكلمة: أ _ ن ب', letter: 'ر', choices: ['ر', 'د', 'ز', 'س'], ans: 'ر' },
@@ -151,9 +155,17 @@ function checkAnswer(selected) {
         score++;
         feedback.innerText = 'أحسنت! إجابة صحيحة 🌟';
         feedback.className = 'feedback correct';
+        
+        // تشغيل صوت الإجابة الصحيحة
+        correctSound.currentTime = 0;
+        correctSound.play();
     } else {
         feedback.innerText = `إجابة خاطئة! الحرف الصحيح هو (${qData.ans})`;
         feedback.className = 'feedback wrong';
+        
+        // تشغيل صوت الإجابة الخاطئة
+        wrongSound.currentTime = 0;
+        wrongSound.play();
     }
 
     setTimeout(() => {
