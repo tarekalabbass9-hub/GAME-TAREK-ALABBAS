@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة حروف الهجاء للأطفال</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .game-container {
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            border: 4px solid #4CAF50;
+        }
+        h1 { color: #2E7D32; font-size: 28px; }
+        .progress { color: #888; font-size: 18px; margin-bottom: 20px; }
+        .question-box {
+            background-color: #e8f5e9;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 24px;
+            color: #1b5e20;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .word-display {
+            font-size: 36px;
+            color: #d84315;
+            letter-spacing: 2px;
+            margin: 15px 0;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .btn-option {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-option:hover { background-color: #45a049; transform: scale(1.03); }
+        .feedback { font-size: 22px; font-weight: bold; margin-top: 15px; height: 30px; }
+        .correct { color: #2e7d32; }
+        .wrong { color: #c62828; }
+        .score-box { font-size: 28px; color: #1565c0; font-weight: bold; }
+        .restart-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>🎨 لعبة الحروف العربية الجميله 🎨</h1>
+    <div id="game-body">
+        <div class="progress" id="progress">السؤال 1 من 20</div>
+        <div class="question-box" id="question">جاري تحميل السؤال...</div>
+        <div class="word-display" id="word-display"></div>
+        <div class="options-grid" id="options"></div>
+        <div class="feedback" id="feedback"></div>
+    </div>
+</div>
+
+<script>
+const questions = [
+    { type: 'letter', q: 'أي من الكلمات بها حرف ألف منفصل (أ...)؟', letter: 'أ', choices: ['أرنب', 'ثعلب', 'بيت', 'ثمار'], ans: 'أرنب' },
+    { type: 'word', q: 'اختر الحرف المنفصل المناسب للكلمة: أ _ ن ب', letter: 'ر', choices: ['ر', 'د', 'ز', 'س'], ans: 'ر' },
+    { type: 'letter', q: 'اختر الكلمة التي بها حرف (الباء) المنفصل:', letter: 'ب', choices: ['تمر', 'كتاب', 'حصان', 'ثمر'], ans: 'كتاب' },
+    { type: 'word', q: 'ما الحرف الناقص في كلمة: _ س د؟', letter: 'أ', choices: ['أ', 'و', 'ر', 'ذ'], ans: 'أ' },
+    { type: 'letter', q: 'ما هو هذا الحرف؟', letter: 'د', choices: ['ذال', 'راء', 'دال', 'زاي'], ans: 'دال' },
+    { type: 'word', q: 'اختر الحرف المنفصل الأخير لكلمة: و ر _', letter: 'د', choices: ['د', 'ر', 'ز', 'س'], ans: 'دال' },
+    { type: 'letter', q: 'اختر شكل حرف (الراء) المنفصل:', letter: 'ر', choices: ['ز', 'د', 'ر', 'و'], ans: 'ر' },
+    { type: 'word', q: 'ما الحرف الناقص في كلمة: د ا _ ؟', letter: 'ر', choices: ['ر', 'ب', 'ت', 'ج'], ans: 'ر' },
+    { type: 'letter', q: 'ما هو اسم هذا الحرف المنفصل؟', letter: 'ز', choices: ['راء', 'زاي', 'ذال', 'واو'], ans: 'زاي' },
+    { type: 'word', q: 'اختر الحرف المناسب لتصبح الكلمة نوع من الفواكه: م و _', letter: 'ز', choices: ['ز', 'د', 'ش', 'ف'], ans: 'ز' },
+    { type: 'letter', q: 'اختر شكل حرف (الواو) المنفصل:', letter: 'و', choices: ['فصول', 'مربوط', 'وقت', 'صفوف'], ans: 'وقت' },
+    { type: 'word', q: 'ما الحرف الأول المتصل الناقص في كلمة: _ و ء 💡؟', letter: 'ض', choices: ['ضـ', 'ص', 'ط', 'ظ'], ans: 'ضـ' },
+    { type: 'letter', q: 'ما هو اسم هذا الحرف المنفصل؟', letter: 'ت', choices: ['ثاء', 'باء', 'تاء', 'نون'], ans: 'تاء' },
+    { type: 'word', q: 'اختر الحرف المنفصل المناسب: ب ا _ (للباب)', letter: 'ب', choices: ['ب', 'ت', 'ث', 'ج'], ans: 'ب' },
+    { type: 'letter', q: 'اختر شكل حرف (الثاء) المنفصل:', letter: 'ث', choices: ['ـثـ', 'ــث', 'ث', 'ثــ'], ans: 'ث' },
+    { type: 'word', q: 'ما الحرف الناقص في كلمة: ذ ُ _ ة (ذرة)؟', letter: 'ر', choices: ['ر', 'ز', 'د', 'و'], ans: 'ر' },
+    { type: 'letter', q: 'ما هو اسم هذا الحرف المنفصل؟', letter: 'ذ', choices: ['دال', 'ذال', 'راء', 'زاي'], ans: 'ذال' },
+    { type: 'word', q: 'اختر الحرف الناقص في بداية كلمة: _ ئ ب (ذئب)؟', letter: 'ذ', choices: ['ذ', 'د', 'أ', 'و'], ans: 'ذ' },
+    { type: 'letter', q: 'أي من التالية هو حرف (الطاء) المنفصل؟', letter: 'ط', choices: ['طــ', 'ــط', 'و', 'ط'], ans: 'ط' },
+    { type: 'word', q: 'ما الحرف المنفصل الذي ينتهي به اسم: ن و _ ؟', letter: 'ر', choices: ['ر', 'ز', 'د', 'ذ'], ans: 'ر' }
+];
+
+let currentQ = 0;
+let score = 0;
+
+function loadQuestion() {
+    const qData = questions[currentQ];
+    document.getElementById('progress').innerText = `السؤال ${currentQ + 1} من ${questions.length}`;
+    document.getElementById('question').innerText = qData.q;
+    document.getElementById('feedback').innerText = '';
+    
+    const wordDisplay = document.getElementById('word-display');
+    if(qData.type === 'letter') {
+        wordDisplay.innerText = `[ ${qData.letter} ]`;
+    } else {
+        wordDisplay.innerText = '';
+    }
+
+    const optionsGrid = document.getElementById('options');
+    optionsGrid.innerHTML = '';
+
+    qData.choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-option';
+        btn.innerText = choice;
+        btn.onclick = () => checkAnswer(choice);
+        optionsGrid.appendChild(btn);
+    });
+}
+
+function checkAnswer(selected) {
+    const qData = questions[currentQ];
+    const feedback = document.getElementById('feedback');
+    
+    // تعطيل الأزرار لمنع التكرار
+    const buttons = document.querySelectorAll('.btn-option');
+    buttons.forEach(b => b.disabled = true);
+
+    if (selected === qData.ans) {
+        score++;
+        feedback.innerText = 'أحسنت! إجابة صحيحة 🌟';
+        feedback.className = 'feedback correct';
+    } else {
+        feedback.innerText = `إجابة خاطئة! الحرف الصحيح هو (${qData.ans})`;
+        feedback.className = 'feedback wrong';
+    }
+
+    setTimeout(() => {
+        currentQ++;
+        if (currentQ < questions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    }, 1500);
+}
+
+function showResults() {
+    const gameBody = document.getElementById('game-body');
+    gameBody.innerHTML = `
+        <div class="score-box">🎉 انتهت اللعبة! 🎉</div>
+        <p style="font-size: 22px; margin: 20px 0;">لقد حصلت على: <b>${score}</b> من <b>${questions.length}</b></p>
+        <button class="restart-btn" onclick="location.reload()">إعادة اللعب 🔄</button>
+    `;
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
